@@ -1,4 +1,4 @@
-# Code-Challenge--Customer-CRUD
+# Code-Challenge-Customer-CRUD
 
 A full-stack CRUD application for managing customer records using:
 
