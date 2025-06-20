@@ -93,6 +93,10 @@ $app->configure('app');
 $app->withEloquent();
 $app->withFacades();
 $app->register(App\Providers\AppServiceProvider::class);
+$app->middleware([
+    App\Http\Middleware\CorsMiddleware::class,
+]);
+
 // $app->register(App\Providers\AuthServiceProvider::class);
 // $app->register(App\Providers\EventServiceProvider::class);
 // $app->register(Illuminate\Database\Eloquent\DatabaseServiceProvider::class);
