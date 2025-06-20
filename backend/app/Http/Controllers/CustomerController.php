@@ -9,6 +9,7 @@ use Illuminate\Validation\ValidationException;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Http;
 
 
 class CustomerController extends Controller
@@ -70,25 +71,27 @@ class CustomerController extends Controller
         return response()->json(Customer::all());
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'email' => 'required|email|unique:customers,email|max:255',
-            'contact_number' => 'nullable|string|max:20',
+        $this->validate($request, [
+            'first_name' => 'required',
+            'last_name' => 'required',
+            'email' => 'required|email|unique:customers',
         ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
 
         $customer = Customer::create($request->all());
 
-        $this->syncCustomerToElasticsearch($customer);
+        // 🔁 Sync to ElasticSearch
+        Http::put('http://customer-elasticsearch:9200/customers/_doc/' . $customer->id, [
+            'first_name' => $customer->first_name,
+            'last_name' => $customer->last_name,
+            'email' => $customer->email,
+            'contact_number' => $customer->contact_number,
+        ]);
 
         return response()->json($customer, 201);
     }
+
 
     public function show(int $id): JsonResponse
     {
@@ -101,31 +104,29 @@ class CustomerController extends Controller
         return response()->json($customer);
     }
 
-    public function update(Request $request, int $id): JsonResponse
+    public function update($id, Request $request)
     {
-        $customer = Customer::find($id);
+        $customer = Customer::findOrFail($id);
 
-        if (!$customer) {
-            return response()->json(['message' => 'Customer not found'], 404);
-        }
-
-        $validator = Validator::make($request->all(), [
-            'first_name'      => 'required|string|max:255',
-            'last_name'       => 'required|string|max:255',
-            'email'           => 'required|email|unique:customers,email,' . $id,
-            'contact_number'  => 'nullable|string|max:20',
+        $this->validate($request, [
+            'first_name' => 'required',
+            'last_name' => 'required',
+            'email' => "required|email|unique:customers,email,{$id}",
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
+        $customer->update($request->all());
 
-        $customer->update($validator->validated());
-
-        $this->syncCustomerToElasticsearch($customer);
+        // 🔁 Update ElasticSearch
+        Http::put('http://customer-elasticsearch:9200/customers/_doc/' . $customer->id, [
+            'first_name' => $customer->first_name,
+            'last_name' => $customer->last_name,
+            'email' => $customer->email,
+            'contact_number' => $customer->contact_number,
+        ]);
 
         return response()->json($customer);
     }
+
 
     public function destroy(int $id): JsonResponse
     {
