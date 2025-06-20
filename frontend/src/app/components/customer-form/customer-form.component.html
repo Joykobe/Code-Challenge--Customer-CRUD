@@ -1,0 +1,35 @@
+<div class="card">
+  <div class="card-header">
+    <h4>{{ isEdit ? 'Edit Customer' : 'Create Customer' }}</h4>
+  </div>
+  <div class="card-body">
+    <form (ngSubmit)="saveCustomer()">
+      <div class="mb-3">
+        <label class="form-label">First Name</label>
+        <input class="form-control" [(ngModel)]="customer.first_name" name="first_name" required />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Last Name</label>
+        <input class="form-control" [(ngModel)]="customer.last_name" name="last_name" required />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input class="form-control" [(ngModel)]="customer.email" name="email" type="email" required />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Contact Number</label>
+        <input class="form-control" [(ngModel)]="customer.contact_number" name="contact_number" />
+      </div>
+
+      <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+
+      <button type="submit" class="btn btn-primary">
+        {{ isEdit ? 'Update' : 'Create' }}
+      </button>
+      <a class="btn btn-secondary ms-2" [routerLink]="['/']">Cancel</a>
+    </form>
+  </div>
+</div>
