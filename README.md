@@ -36,7 +36,6 @@ cp .env.example .env
 
 DB_HOST=db
 DB_PORT=3306
-
 DB_DATABASE=customer_db
 DB_USERNAME=root
 DB_PASSWORD=secret
